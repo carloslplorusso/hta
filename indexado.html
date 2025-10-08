@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Pacientes Hipertensos. Carlos Petit Lorusso</title>
+<style>
+  :root{
+    --bg:#0b1220; --panel:#0f172a; --ink:#e5e7eb; --muted:#94a3b8;
+    --primary:#25d1c1; --accent:#6751cf; --warn:#f59e0b; --danger:#ef4444; --ok:#22c55e;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:linear-gradient(180deg,#0b1220 0%,#0b1220 40%,#0e1a33 100%);
+    color:var(--ink); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;
+    line-height:1.45;
+  }
+  header{
+    position:sticky; top:0; z-index:10;
+    background:#0c1527cc; backdrop-filter:blur(6px);
+    border-bottom:1px solid #1e293b; padding:10px 16px;
+  }
+  h1{margin:0; font-size:clamp(18px,2.5vw,24px); letter-spacing:.2px}
+  .sub{font-size:12px; color:var(--muted)}
+  .wrap{max-width:1000px; margin:0 auto; padding:16px}
+  .grid{display:grid; gap:12px}
+  @media(min-width:900px){ .grid{grid-template-columns:1.1fr .9fr} }
+  .card{
+    background:var(--panel); border:1px solid #1f2937; border-radius:14px; padding:14px;
+    box-shadow:0 10px 30px #0005;
+  }
+  .card h2{margin:0 0 8px; font-size:18px}
+  .row{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+  label{display:block; font-size:13px; color:var(--muted); margin:6px 0 2px}
+  input[type="number"],select{
+    width:100%; padding:10px; border-radius:10px; border:1px solid #334155; background:#0b1220; color:var(--ink);
+  }
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:6px}
+  .chip{display:inline-flex; align-items:center; gap:8px; padding:8px 10px; border:1px solid #334155;
+    border-radius:999px; background:#0b1220; font-size:13px; cursor:pointer; user-select:none}
+  .chip input{accent-color:var(--accent)}
+  .radios,.radios2{display:flex; flex-wrap:wrap; gap:8px}
+  .radio{
+    border:1px solid #334155; border-radius:12px; padding:8px 10px; cursor:pointer; display:flex; align-items:center; gap:8px;
+    background:#0b1220; font-size:13px;
+  }
+  .btns{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+  button{
+    border:1px solid #334155; background:#0b1220; color:var(--ink); padding:10px 12px; border-radius:12px; cursor:pointer;
+  }
+  .btn-primary{background:var(--accent); border-color:transparent; color:white; font-weight:600}
+  .btn-ghost{background:transparent}
+  .kpi{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:8px}
+  .pill{padding:8px 10px; border-radius:10px; font-size:13px; border:1px solid #334155; background:#0b1220}
+  .pill.ok{border-color:#164e31; background:#0c1f17; color:#bbf7d0}
+  .pill.warn{border-color:#6b4b0b; background:#1b1406; color:#fde68a}
+  .pill.danger{border-color:#7a1a1a; background:#1b0c0c; color:#fecaca}
+  .result{
+    border-left:4px solid var(--primary);
+    padding-left:12px; margin-top:8px;
+  }
+  .result h3{margin:0 0 4px}
+  .muted{color:var(--muted)}
+  details{border:1px dashed #334155; border-radius:10px; padding:8px 10px; margin-top:8px}
+  summary{cursor:pointer; font-weight:600}
+  .tags{display:flex; flex-wrap:wrap; gap:6px; margin:6px 0}
+  .tag{font-size:11px; padding:4px 8px; border:1px solid #334155; border-radius:999px; color:#cbd5e1}
+  .hr{height:1px; background:#1f2937; margin:10px 0}
+  dialog{border:none; border-radius:16px; max-width:900px; width:92vw; background:#0b1220; color:var(--ink); padding:0; box-shadow:0 30px 80px #000a}
+  .dlg-head{display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid #1f2937; background:#0f172a}
+  .dlg-head h3{margin:0; font-size:18px}
+  .dlg-body{padding:16px}
+  .close{background:#0b1220}
+  .list{margin:0; padding-left:18px}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+  footer{padding:24px; text-align:center; color:#64748b; font-size:12px}
+  a {color:var(--primary)}
+</style>
+</head>
+<body>
+  <header>
+    <h1>Pacientes Hipertensos. Carlos Petit Lorusso</h1>
+    <div class="sub">Algoritmo interactivo ADA + ACC/AHA para consulta odontológica. Offline. Sin backend.</div>
+  </header>
+
+  <div class="wrap grid">
+    <section class="card">
+      <h2>Flujograma interactivo</h2>
+
+      <div class="hr"></div>
+      <h3 class="mono">Paso 1 · Clasificar presión arterial</h3>
+      <div class="row">
+        <div>
+          <label for="categoria">Categoría (ACC/AHA)</label>
+          <select id="categoria">
+            <option value="normal">Normal &lt;120/&lt;80</option>
+            <option value="elevada">Elevada 120–129 y &lt;80</option>
+            <option value="est1">HTA estadio 1 130–139 o 80–89</option>
+            <option value="est2">HTA estadio 2 ≥140 o ≥90</option>
+            <option value="crisis">PA ≥180 y/o ≥120</option>
+          </select>
+        </div>
+        <div>
+          <label>O introduce PAS/PAD (mmHg)</label>
+          <div class="row">
+            <input type="number" id="pas" placeholder="PAS" min="70" max="260" />
+            <input type="number" id="pad" placeholder="PAD" min="40" max="160" />
+          </div>
+        </div>
+      </div>
+      <div class="chips">
+        <label class="chip" title="Marcador educativo; no altera el cálculo"><input type="checkbox" id="promedio"> Usar promedio de 2–3 lecturas</label>
+        <label class="chip"><input type="checkbox" id="dolor_odonto"> Dolor odontogénico contribuye a PA</label>
+      </div>
+
+      <div class="hr"></div>
+      <h3 class="mono">Paso 2 · ¿Signos/síntomas de daño a órgano diana?</h3>
+      <div class="chips" id="sx">
+        <label class="chip"><input type="checkbox" value="neurol"> Déficit neurológico agudo</label>
+        <label class="chip"><input type="checkbox" value="toracico"> Dolor torácico isquémico</label>
+        <label class="chip"><input type="checkbox" value="disnea"> Disnea/edema pulmonar</label>
+        <label class="chip"><input type="checkbox" value="aortico"> Dolor aórtico</label>
+        <label class="chip"><input type="checkbox" value="renal"> Deterioro renal agudo</label>
+      </div>
+
+      <div class="hr"></div>
+      <h3 class="mono">Paso 3 · Tipo de procedimiento</h3>
+      <div class="radios" id="proc">
+        <label class="radio"><input type="radio" name="proc" value="corto" checked> Electivo corto</label>
+        <label class="radio"><input type="radio" name="proc" value="largo"> Electivo largo</label>
+        <label class="radio"><input type="radio" name="proc" value="urgente"> Urgencia por dolor</label>
+      </div>
+
+      <div class="hr"></div>
+      <h3 class="mono">Paso 4 · Contexto clínico</h3>
+      <div class="radios2">
+        <label class="radio"><input type="checkbox" id="alto_riesgo"> Enfermedad CV establecida / Riesgo CV alto</label>
+        <label class="radio"><input type="checkbox" id="vaso"> Necesita vasoconstrictor (epinefrina)</label>
+      </div>
+
+      <div class="btns">
+        <button class="btn-primary" id="calcular">Calcular decisión</button>
+        <button class="btn-ghost" id="limpiar">Reiniciar</button>
+        <button class="btn-ghost" id="btnEmerg">Emergencias</button>
+        <button class="btn-ghost" id="btnClasif">Clasificación de HTA</button>
+      </div>
+
+      <div class="kpi">
+        <div class="pill" id="k_cat">Categoría: Normal</div>
+        <div class="pill" id="k_proc">Procedimiento: Electivo corto</div>
+        <div class="pill" id="k_bandera">Estado: OK</div>
+      </div>
+
+      <div class="result" id="resultado">
+        <h3>Decisión: Atención habitual</h3>
+        <div class="muted" id="res-resumen">Proceder con control del dolor y del estrés. Educación y seguimiento rutinario.</div>
+        <details>
+          <summary>Explicación completa</summary>
+          <div id="res-detalle" style="margin-top:6px">
+            <div class="tags">
+              <span class="tag">ADA odontología</span>
+              <span class="tag">ACC/AHA</span>
+              <span class="tag">Anestesia local</span>
+              <span class="tag">Monitorización</span>
+            </div>
+            <p><strong>Razonamiento:</strong> PA en rango normal o elevado sin signos de daño agudo. El procedimiento es electivo de corta duración. Las guías permiten continuar con medidas de control del estrés y analgesia adecuada.</p>
+            <ul class="list">
+              <li><strong>Monitorización:</strong> tomar PA al inicio; repetir si el procedimiento supera 45–60 min.</li>
+              <li><strong>Ansiólisis no farmacológica:</strong> comunicación, anestesia efectiva, ambiente tranquilo.</li>
+              <li><strong>Anestesia:</strong> si se requiere vasoconstrictor, inyección lenta con aspiración; límite orientativo de epinefrina total 0.04 mg (≈ 2 carpules 1:100.000 o 4 carpules 1:200.000).</li>
+              <li><strong>Seguimiento:</strong> reforzar medidas de estilo de vida y control médico habitual.</li>
+            </ul>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <aside class="card">
+      <h2>Ayudas rápidas</h2>
+      <details open>
+        <summary>Recomendaciones operativas</summary>
+        <ul class="list">
+          <li>Medir con manguito adecuado. Reposo 5 min. Brazo a nivel del corazón.</li>
+          <li>Confirmar valores anómalos con ≥2 lecturas. Promediar si es posible.</li>
+          <li>Si PA elevada por dolor, priorizar control del foco doloroso.</li>
+          <li>Evitar intravascular. Aspiración repetida. Inyección lenta.</li>
+          <li>Si PA ≥180/110 y/o signos de daño → activar emergencias.</li>
+        </ul>
+      </details>
+      <details>
+        <summary>Límites prácticos</summary>
+        <ul class="list">
+          <li>Electivos prolongados: objetivo operativo PA &lt;160/100.</li>
+          <li>Epinefrina total recomendada en CV alto: ≤0.04 mg.</li>
+          <li>Monitorización cada 10–15 min si PA alta o procedimiento largo.</li>
+        </ul>
+      </details>
+      <div class="hr"></div>
+      <p class="muted">Este recurso es educativo. Adapte a cada paciente y coordine con su médico tratante.</p>
+    </aside>
+  </div>
+
+  <dialog id="dlgEmerg" aria-label="Emergencias en la consulta">
+    <div class="dlg-head">
+      <h3>Emergencias en la consulta</h3>
+      <button class="close" onclick="dlgEmerg.close()">Cerrar</button>
+    </div>
+    <div class="dlg-body">
+      <h4>Crisis hipertensiva</h4>
+      <p><strong>Definición:</strong> PA marcadamente elevada ≥180/110–120 mmHg; “emergencia hipertensiva” si hay daño agudo a órgano diana (neurológico, coronario, renal, edema pulmonar, aórtico).</p>
+      <p><strong>Signos:</strong> déficit neurológico, dolor torácico isquémico, disnea/edema, dolor aórtico, alteración del estado mental, oliguria/anuria.</p>
+      <p><strong>Protocolo:</strong> detener procedimiento, confirmar PA, posición de confort, ABC, <em>no</em> bajar PA en consulta. Activar EMS si síntomas o PA persiste ≥180/110–120. Preparar BLS/DEA.</p>
+
+      <div class="hr"></div>
+      <h4>Angina de pecho</h4>
+      <p><strong>Definición:</strong> dolor/u opresión torácica por isquemia. Irradia a brazo, cuello o mandíbula. Puede acompañarse de disnea, náusea.</p>
+      <p><strong>Signos:</strong> opresión minutos, relación con estrés; puede ceder con reposo/nitro.</p>
+      <p><strong>Protocolo:</strong> suspender atención, posición de confort. Nitroglicerina 0.3–0.4 mg SL cada 5 min hasta 3 dosis si PAS &gt; 90 mmHg y sin inhibidor PDE5 reciente. Si persiste &gt;5–10 min o es atípico, activar EMS. Aspirina masticable 162–325 mg si no hay contraindicación. Oxígeno solo si hipoxemia. BLS/DEA si colapso.</p>
+
+      <div class="hr"></div>
+      <h4>Infarto agudo de miocardio (IAM)</h4>
+      <p><strong>Definición:</strong> isquemia miocárdica prolongada con dolor torácico &gt;10 min o equivalentes (disnea, diaforesis, síncope) que no cede con nitro.</p>
+      <p><strong>Signos:</strong> dolor opresivo persistente, palidez, sudoración, inestabilidad hemodinámica, alteración de conciencia.</p>
+      <p><strong>Protocolo:</strong> activar EMS. Reposo, monitorización PA/FC/SpO₂. Aspirina masticable 162–325 mg si alerta y sin alergia. Nitroglicerina 0.4 mg SL cada 5 min hasta 3 dosis si PAS &gt; 90 mmHg y sin PDE5 reciente. Oxígeno solo si hipoxemia. Iniciar BLS y usar DEA si colapsa.</p>
+    </div>
+  </dialog>
+
+  <dialog id="dlgClasif" aria-label="Clasificación de presión arterial">
+    <div class="dlg-head">
+      <h3>Clasificación ACC/AHA de PA en consultorio</h3>
+      <button class="close" onclick="dlgClasif.close()">Cerrar</button>
+    </div>
+    <div class="dlg-body">
+      <ul class="list">
+        <li><strong>Normal:</strong> &lt;120 y &lt;80 mmHg</li>
+        <li><strong>Elevada:</strong> 120–129 y &lt;80 mmHg</li>
+        <li><strong>HTA Estadio 1:</strong> 130–139 <em>o</em> 80–89 mmHg</li>
+        <li><strong>HTA Estadio 2:</strong> ≥140 <em>o</em> ≥90 mmHg</li>
+        <li><strong>PA marcadamente elevada (“crisis” operativa):</strong> ≥180 y/o ≥120 mmHg</li>
+      </ul>
+      <p class="muted">Confirmar con promedio de ≥2 lecturas. Considerar ABPM/HBPM para diagnóstico de HTA.</p>
+    </div>
+  </dialog>
+
+  <footer>
+    © <span id="year"></span> • Protocolo educativo basado en lineamientos ADA y ACC/AHA. Este software no reemplaza el juicio clínico.
+  </footer>
+
+<script>
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+  const catSelect = $('#categoria');
+  const pas = $('#pas'); const pad = $('#pad');
+  const dolorOdonto = $('#dolor_odonto');
+  const sxBox = $('#sx');
+  const procRadios = $('#proc');
+  const altoRiesgo = $('#alto_riesgo');
+  const vaso = $('#vaso');
+
+  const kCat = $('#k_cat'), kProc = $('#k_proc'), kFlag = $('#k_bandera');
+  const resBox = $('#resultado'), resTitulo = resBox.querySelector('h3'), resResumen = $('#res-resumen'), resDetalle = $('#res-detalle');
+
+  const dlgEmerg = $('#dlgEmerg'); const dlgClasif = $('#dlgClasif');
+
+  $('#year').textContent = new Date().getFullYear();
+
+  function classifyACC_AHA(s,d){
+    const sOk = Number.isFinite(s), dOk = Number.isFinite(d);
+    const sVal = sOk ? s : -Infinity;
+    const dVal = dOk ? d : -Infinity;
+    if (sVal >= 180 || dVal >= 120) return 'crisis';
+    if (sVal >= 140 || dVal >= 90) return 'est2';
+    if ((sVal >= 130 && sVal <= 139) || (dVal >= 80 && dVal <= 89)) return 'est1';
+    if (sVal >= 120 && sVal <= 129 && dVal < 80) return 'elevada';
+    return 'normal';
+  }
+  function labelCat(cat){
+    return {normal:'Normal', elevada:'Elevada', est1:'HTA estadio 1', est2:'HTA estadio 2', crisis:'PA ≥180/≥120'}[cat] || cat;
+  }
+
+  function deriveCategoryFromNumbers(){
+    const s = parseInt(pas.value,10), d = parseInt(pad.value,10);
+    if(Number.isFinite(s) || Number.isFinite(d)){
+      const cat = classifyACC_AHA(s,d);
+      catSelect.value = cat;
+      kCat.textContent = `Categoría: ${labelCat(cat)}`;
+    }else{
+      kCat.textContent = `Categoría: ${labelCat(catSelect.value)}`;
+    }
+  }
+  function getSymptoms(){ return $$('#sx input:checked').map(x=>x.value); }
+  function getProc(){ return $$('#proc input[type=radio]').find(x=>x.checked)?.value || 'corto'; }
+
+  function decidir(){
+    const s = parseInt(pas.value,10), d = parseInt(pad.value,10);
+    let cat = (Number.isFinite(s) || Number.isFinite(d)) ? classifyACC_AHA(s,d) : catSelect.value;
+
+    const sintomas = getSymptoms();
+    const proc = getProc();
+    const esAltoRiesgo = altoRiesgo.checked;
+    const requiereVaso = vaso.checked;
+    const dolor = dolorOdonto.checked;
+
+    kCat.textContent = `Categoría: ${labelCat(cat)}`;
+    kProc.textContent = `Procedimiento: ${proc==='corto'?'Electivo corto':proc==='largo'?'Electivo largo':'Urgencia por dolor'}`;
+
+    // Emergencia por síntomas compatibles con daño agudo
+    if (sintomas.length>0){
+      setDanger('Emergencia/sospecha de evento agudo', 
+        'Detener atención. Posición de confort. ABC. Activar emergencias (EMS). Preparar BLS/DEA.',
+        buildDetalleEmerg('Se detectaron signos o síntomas compatibles con daño a órgano diana o SCA/ECV.'));
+      return;
+    }
+    // PA marcadamente elevada sin síntomas
+    if (cat==='crisis'){
+      setDanger('PA marcadamente elevada', 
+        'Diferir atención electiva y activar evaluación urgente. No descender PA en consulta. Si aparecen síntomas, activar EMS.',
+        buildDetalleCrisis());
+      return;
+    }
+
+    if (cat==='est2'){
+      if (proc==='urgente' && dolor){
+        setWarn('Tratar foco doloroso con monitorización',
+          'Realizar manejo del dolor o foco infeccioso con control del estrés. Medir PA cada 10–15 min.',
+          buildDetalleEst2Urgente(requiereVaso));
+        return;
+      }
+      if (proc==='largo'){
+        setWarn('Proceder con cautela o diferir',
+          'Si está estable y el beneficio supera el riesgo, proceder con monitorización frecuente. Si no, diferir y coordinar evaluación médica en ≤1 mes.',
+          buildDetalleEst2(requiereVaso,true));
+        return;
+      }
+      setWarn('Proceder con monitorización',
+        'Proceder con citas cortas, control del dolor/estrés y medición periódica de PA.',
+        buildDetalleEst2(requiereVaso,false));
+      return;
+    }
+
+    if (cat==='est1'){
+      if (esAltoRiesgo){
+        setOk('Proceder y coordinar manejo médico',
+          'Atención dental habitual con control del estrés. Coordinar con su médico para optimización del control de PA.',
+          buildDetalleEst1(true, requiereVaso));
+        return;
+      }
+      setOk('Proceder',
+        'Consejos no farmacológicos y recontrol en 3–6 meses.',
+        buildDetalleEst1(false, requiereVaso));
+      return;
+    }
+
+    if (cat==='elevada'){
+      setOk('Proceder',
+        'Refuerzo de estilo de vida. Revalorar en 6 meses.',
+        buildDetalleElevada(requiereVaso));
+      return;
+    }
+
+    setOk('Atención habitual',
+      'Proceder con control del dolor y del estrés. Seguimiento rutinario.',
+      buildDetalleNormal(requiereVaso));
+  }
+
+  function buildAnestesia(requiereVaso){
+    return `
+      <li><strong>Anestesia local:</strong> ${requiereVaso
+        ? 'Usar vasoconstrictor si está indicado con inyección lenta y aspiración repetida; límite orientativo de epinefrina total 0.04 mg (≈ 2 carp 1:100.000 o 4 carp 1:200.000).'
+        : 'Puede usarse anestésico sin vasoconstrictor si la hemostasia y la duración lo permiten.'}
+      </li>`;
+  }
+  function buildComun(){
+    return `
+      <li><strong>Medición:</strong> reposo 5 min, manguito adecuado, repetir y promediar lecturas si es posible.</li>
+      <li><strong>Estrategias antiestrés:</strong> comunicación, anestesia efectiva, ambiente tranquilo.</li>`;
+  }
+  function buildDetalleNormal(requiereVaso){
+    return `<ul class="list">
+      ${buildComun()}
+      ${buildAnestesia(requiereVaso)}
+      <li><strong>Monitorización:</strong> repetir si el procedimiento supera 45–60 min.</li>
+    </ul>`;
+  }
+  function buildDetalleElevada(requiereVaso){
+    return `<ul class="list">
+      ${buildComun()}
+      <li><strong>Consejo:</strong> reforzar estilo de vida (sodio, peso, actividad, alcohol).</li>
+      ${buildAnestesia(requiereVaso)}
+    </ul>`;
+  }
+  function buildDetalleEst1(altoRiesgo, requiereVaso){
+    return `<ul class="list">
+      ${buildComun()}
+      <li><strong>Manejo:</strong> ${altoRiesgo ? 'coordinar evaluación/manejo médico y objetivos &lt;130/80.' : 'no farmacológico y recontrol en 3–6 meses.'}</li>
+      ${buildAnestesia(requiereVaso)}
+      <li><strong>Monitorización:</strong> considerar control de PA durante el procedimiento si es prolongado.</li>
+    </ul>`;
+  }
+  function buildDetalleEst2(requiereVaso, esLargo){
+    return `<ul class="list">
+      ${buildComun()}
+      <li><strong>Plan:</strong> ${esLargo ? 'valorar diferir electivos largos. Si procede, monitorización frecuente.' : 'citas cortas con pausas y medición periódica.'}</li>
+      ${buildAnestesia(requiereVaso)}
+      <li><strong>Seguimiento:</strong> coordinación médica en ≤1 mes para optimización.</li>
+    </ul>`;
+  }
+  function buildDetalleEst2Urgente(requiereVaso){
+    return `<ul class="list">
+      <li><strong>Justificación:</strong> el dolor puede elevar transitoriamente la PA; tratar el foco puede reducirla.</li>
+      ${buildAnestesia(requiereVaso)}
+      <li><strong>Monitorización:</strong> PA cada 10–15 min durante el manejo.</li>
+      <li><strong>Tras la resolución:</strong> coordinar control médico en breve.</li>
+    </ul>`;
+  }
+  function buildDetalleCrisis(){
+    return `<ul class="list">
+      <li><strong>Definición:</strong> PA ≥180/110–120 mmHg.</li>
+      <li><strong>Acción:</strong> diferir electivos; si aparecen signos de daño, activar EMS.</li>
+      <li><strong>No</strong> descender PA en consulta dental.</li>
+    </ul>`;
+  }
+  function buildDetalleEmerg(extra){
+    return `<ul class="list">
+      <li><strong>Signos guía:</strong> dolor torácico, disnea/edema, déficit neurológico, dolor aórtico, alteración mental.</li>
+      <li><strong>Acciones:</strong> detener procedimiento, ABC, posición de confort, EMS, BLS/DEA si colapso.</li>
+      <li>${extra}</li>
+    </ul>`;
+  }
+
+  function setOk(titulo,resumen,detalle){
+    resBox.style.borderLeftColor = 'var(--ok)';
+    resTitulo.textContent = `Decisión: ${titulo}`;
+    resResumen.textContent = resumen;
+    resDetalle.innerHTML = `<div class="tags">
+      <span class="tag">Continuar</span><span class="tag">Control del estrés</span><span class="tag">ADA</span>
+    </div>${detalle}`;
+    kFlag.className = 'pill ok'; kFlag.textContent = 'Estado: OK';
+  }
+  function setWarn(titulo,resumen,detalle){
+    resBox.style.borderLeftColor = 'var(--warn)';
+    resTitulo.textContent = `Decisión: ${titulo}`;
+    resResumen.textContent = resumen;
+    resDetalle.innerHTML = `<div class="tags">
+      <span class="tag">Precaución</span><span class="tag">Monitorizar</span><span class="tag">Coordinar</span>
+    </div>${detalle}`;
+    kFlag.className = 'pill warn'; kFlag.textContent = 'Estado: Precaución';
+  }
+  function setDanger(titulo,resumen,detalle){
+    resBox.style.borderLeftColor = 'var(--danger)';
+    resTitulo.textContent = `Decisión: ${titulo}`;
+    resResumen.textContent = resumen;
+    resDetalle.innerHTML = `<div class="tags">
+      <span class="tag">Emergencia</span><span class="tag">BLS/DEA</span><span class="tag">EMS</span>
+    </div>${detalle}`;
+    kFlag.className = 'pill danger'; kFlag.textContent = 'Estado: Emergencia';
+  }
+
+  $('#calcular').addEventListener('click', decidir);
+  $('#limpiar').addEventListener('click', () => {
+    catSelect.value='normal'; pas.value=''; pad.value='';
+    $$('#sx input:checked').forEach(x=>x.checked=false);
+    $$('#proc input')[0].checked=true;
+    altoRiesgo.checked=false; vaso.checked=false; dolorOdonto.checked=false;
+    deriveCategoryFromNumbers(); decidir();
+  });
+  $('#btnEmerg').addEventListener('click', ()=> dlgEmerg.showModal());
+  $('#btnClasif').addEventListener('click', ()=> dlgClasif.showModal());
+
+  [catSelect,pas,pad,dolorOdonto,altoRiesgo,vaso].forEach(el => el.addEventListener('input', ()=>{ deriveCategoryFromNumbers(); decidir(); }));
+  $$('#sx input, #proc input').forEach(el => el.addEventListener('input', ()=>{ deriveCategoryFromNumbers(); decidir(); }));
+
+  deriveCategoryFromNumbers(); decidir();
+</script>
+</body>
+</html>
+```0
